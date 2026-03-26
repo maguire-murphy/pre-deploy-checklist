@@ -1,0 +1,1 @@
+Run the `fix-database` agent. Since this is a standalone run (not from /pre-deploy), the agent will do its own quick assessment of database security (RLS, indexes, auth config) first, then generate fixes for what it finds. All fixes require user approval before applying.

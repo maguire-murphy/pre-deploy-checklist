@@ -1,0 +1,1 @@
+Run the `security-reviewer` agent to do a comprehensive security review covering OWASP top risks for Supabase + Vercel apps. This is a deep review — it covers access control, input validation, secrets, network security, and auth config. Report the results directly.

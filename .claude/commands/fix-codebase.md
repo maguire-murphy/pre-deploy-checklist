@@ -1,0 +1,1 @@
+Run the `fix-codebase` agent. Since this is a standalone run (not from /pre-deploy), the agent will do its own quick assessment of the codebase first (validation, CORS, error handling, logging, rate limiting), then generate fixes for what it finds. All fixes require user approval before applying.
