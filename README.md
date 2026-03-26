@@ -259,7 +259,7 @@ This is opinionated toward Supabase + Vercel + Next.js. The subagent patterns wo
  
 ## Credits
  
-Inspired by the pre-deployment checklists that focus on the "boring but critical" stuff everyone skips. Built with Claude Code's subagent architecture.
+Inspired by the pre-deployment checklist blog post from Arjay McCandless
  
 ## License
  
