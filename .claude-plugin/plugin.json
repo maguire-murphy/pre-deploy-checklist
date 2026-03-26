@@ -1,0 +1,10 @@
+{
+  "name": "pre-deploy-checklist",
+  "description": "Pre-deployment security and reliability checks for Supabase + Vercel + Next.js apps — 12 parallel subagent audits with auto-fix",
+  "version": "1.0.0",
+  "author": {
+    "name": "Maguire Murphy"
+  },
+  "homepage": "https://github.com/maguire-murphy/pre-deploy-checklist",
+  "repository": "https://github.com/maguire-murphy/pre-deploy-checklist"
+}

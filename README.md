@@ -8,7 +8,7 @@
 
 A lot of new people are attempting to build and ship with Claude Code, it is now quick and easy to build something worth using but if you don't secure your applications you are putting yourself at risk. I wanted to share the best way to secure the stack that I use the most.
  
-So I built this. It's a pre-deployment tool that runs entirely inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview), using subagents to audit your app in parallel without eating your main session's context window. It checks twelve things every app should have locked down before launch, and it can auto-fix most of what it finds. 
+So I built this. It's a pre-deployment plug-in that runs entirely inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview), using subagents to audit your app in parallel without eating your main session's context window. It checks twelve things every app should have locked down before launch, and it can auto-fix most of what it finds. 
 
 It's built for the stack that most builders are shipping with right now: **Supabase + Vercel + Next.js**. That's intentional — the [Supabase MCP](https://supabase.com/docs/guides/getting-started/mcp) integration lets the agents query your database schema, check RLS policies, review auth configuration, and generate fix SQL directly, all from the terminal.
  
@@ -44,12 +44,14 @@ If you don't understand what to do these checks take 30-60 minutes to do manuall
  
 ### Install
 
-From your project directory:
-```bash
-# Pull the checklist files directly into your project
-npx degit maguire-murphy/pre-deploy-checklist/.claude .claude
+From inside Claude Code:
+```
+/plugin marketplace add maguire-murphy/pre-deploy-checklist
+/plugin install pre-deploy-checklist@pre-deploy-checklist
+```
 
-# Connect Supabase MCP to your dev project (never production)
+Then connect Supabase MCP to your dev project (never production):
+```bash
 claude mcp add supabase --url "https://mcp.supabase.com/mcp?project_ref=YOUR_PROJECT_REF"
 ```
 
@@ -114,7 +116,7 @@ You type /pre-deploy
    Changes presented → you approve → applied
 ```
  
-Every subagent is defined as a markdown file in `.claude/agents/`. No SDK, no build step. The orchestrator fans them out, collects results, and compiles the report. If there are findings, it spawns fixer agents only for the domains that need attention.
+Every subagent is defined as a markdown file in `agents/`. No SDK, no build step. The orchestrator fans them out, collects results, and compiles the report. If there are findings, it spawns fixer agents only for the domains that need attention.
  
 ---
  
@@ -181,25 +183,34 @@ Would you like me to generate fixes for these issues?
 ## What's In The Box
  
 ```
-.claude/
-├── commands/           # 17 slash commands — type /command-name to run
-│   ├── pre-deploy.md   # Orchestrator: all 12 checks + fix phase
-│   ├── check-*.md      # Individual check shortcuts (12 files)
-│   ├── fix-*.md        # Fixer shortcuts (3 files)
+pre-deploy-checklist/
+├── .claude-plugin/
+│   ├── plugin.json          # Plugin metadata
+│   └── marketplace.json     # Marketplace listing
+│
+├── commands/                # 17 slash commands — type /command-name to run
+│   ├── pre-deploy.md        # Orchestrator: all 12 checks + fix phase
+│   ├── check-*.md           # Individual check shortcuts (12 files)
+│   ├── fix-*.md             # Fixer shortcuts (3 files)
 │   └── security-review.md
 │
-├── agents/             # 16 subagent definitions — the actual logic
-│   ├── check-*.md      # Check agents with scoped tools + output caps
-│   ├── fix-*.md        # Fixer agents with approval gates
+├── agents/                  # 16 subagent definitions — the actual logic
+│   ├── check-*.md           # Check agents with scoped tools + output caps
+│   ├── fix-*.md             # Fixer agents with approval gates
 │   └── security-reviewer.md
 │
-├── skills/             # 4 skills — enforce patterns during normal coding
-│   ├── validation.md   # Zod-first patterns
-│   ├── error-handling.md
-│   ├── logging.md
-│   └── security.md
+├── skills/                  # 4 skills — enforce patterns during normal coding
+│   ├── validation/SKILL.md
+│   ├── error-handling/SKILL.md
+│   ├── logging/SKILL.md
+│   └── security/SKILL.md
 │
-└── settings.json       # 4 hooks — real-time guardrails on every file write
+├── hooks/
+│   └── hooks.json           # 5 hooks — real-time guardrails on every file write
+│
+├── .mcp.json
+├── README.md
+└── .gitignore
 ```
  
 **Commands** are what you type. **Agents** are the isolated workers that do the analysis. **Skills** teach Claude your patterns while you're coding (not during audits). **Hooks** fire automatically on every file write to catch issues in real-time — missing Zod, wildcard CORS, exposed service role keys.
@@ -232,13 +243,13 @@ This was designed to minimize cost. Running twelve audit agents sounds expensive
  
 ## Customizing
  
-**Add a check:** Create a `.md` in `.claude/agents/` with YAML frontmatter (`allowedTools`, output format) and a matching `.md` in `.claude/commands/` as the slash shortcut. Add it to the agent list in `pre-deploy.md`.
- 
+**Add a check:** Create a `.md` in `agents/` with YAML frontmatter (`allowedTools`, output format) and a matching `.md` in `commands/` as the slash shortcut. Add it to the agent list in `commands/pre-deploy.md`.
+
 **Modify a check:** Edit the agent's `.md` file directly. Plain markdown, no build step.
- 
-**Add a skill:** Create a `.md` in `.claude/skills/` with `globs` targeting the files it should apply to.
- 
-**Add a hook:** Edit `.claude/settings.json` — bash one-liners on `PostToolUse` or `PreToolUse`.
+
+**Add a skill:** Create a folder in `skills/` with a `SKILL.md` file containing `globs` targeting the files it should apply to.
+
+**Add a hook:** Edit `hooks/hooks.json` — bash one-liners on `PostToolUse` or `PreToolUse`.
  
 --- 
   
